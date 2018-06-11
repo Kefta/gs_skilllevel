@@ -12,7 +12,7 @@ skill_manifest.cfg is still executed on change and maintains full compatibility.
 * [Added Half-Life: Source skill files](https://github.com/Facepunch/garrysmod/pull/1497).
 * [skill#.cfg is now run on skill level change](https://github.com/Facepunch/garrysmod-requests/issues/1148).
 
-#### Developer Notes
+#### Notes
 * A "Think" hook with ID "game.SetSkillLevel" is used by this addon.
 * Changes to the skill convar will not update game.GetSkillLevel or call the configs until the next tick due to [a bug with convar callbacks](https://github.com/Facepunch/garrysmod-issues/issues/3503).
 
