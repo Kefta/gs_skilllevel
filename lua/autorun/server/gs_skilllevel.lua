@@ -6,6 +6,7 @@ local function ExecConfig(sFile)
 
 		-- File:EndOfFile() replacement
 		while (File:Tell() < iSize) do
+			-- Trim whitespace off the front and back
 			local sLine = string.match(File:ReadLine(), "^%s*(.*)%s*$")
 			local iComment = string.find(sLine, "//", 1, true)
 			local iLen
@@ -13,6 +14,7 @@ local function ExecConfig(sFile)
 			if (iComment == nil) then
 				iLen = #sLine
 			else
+				-- Only consider pre-comment line code
 				iLen = iComment - 1
 			end
 
@@ -25,13 +27,15 @@ local function ExecConfig(sFile)
 			local iCurPos = 1
 
 			-- FIXME: This doesn't exactly replicate cfg quote/tab behaviour
-			::Arg::
+			repeat
 				local iStartArg, iEndArg
 
+				-- If the argument starts with a quote, look for an end-quote
 				if (string.sub(sLine, iCurPos, iCurPos) == '"') then
 					iStartArg = iCurPos + 1
 					iEndArg = string.find(sLine, '"', iStartArg, true)
 
+					-- If there's no end-quote, use the entire rest of the line
 					if (iEndArg == nil) then
 						iCurPos = iLen
 						iEndArg = iLen
@@ -39,6 +43,7 @@ local function ExecConfig(sFile)
 						iCurPos = iEndArg + 1
 						iEndArg = iEndArg - 1
 					end
+				-- Otherwise, use whitespace/a quote as the end point
 				else
 					iStartArg = iCurPos
 					iEndArg = string.find(sLine, "[%s\"]", iCurPos)
@@ -52,15 +57,14 @@ local function ExecConfig(sFile)
 					end
 				end
 
+				-- Add the argument to the table
 				local sArg = string.sub(sLine, iStartArg, iEndArg)
 				iArgs = iArgs + 1
 				tArgs[iArgs] = sArg
 
+				-- Find the next argument by looking for the next non-whitespace character
 				iCurPos = string.find(sLine, "[^%s]", iCurPos)
-
-				if (iCurPos ~= nil) then
-					goto Arg
-				end
+			until (iCurPos == nil)
 
 			-- Recursive exec calls
 			if (string.match(tArgs[1], "^%s*(.*)%s*$") == "exec") then
@@ -70,6 +74,7 @@ local function ExecConfig(sFile)
 					ExecConfig(sFile)
 				end
 			else
+				-- Run the command with all its arguments
 				RunConsoleCommand(unpack(tArgs, 1, iArgs))
 			end
 		end
@@ -84,6 +89,7 @@ local function CheckType(Val, iArg, nType, iLevel --[[= 2]])
 			iLevel = 2
 		end
 
+		-- Don't use string.format with %d or %u here to prevent casting errors
 		local sError = "bad argument #" .. iArg
 		local tDebug = debug.getinfo(2, "n")
 
@@ -111,6 +117,7 @@ function cvars.ExecConfig(sFile)
 end
 
 local function CallSkillConfigs(iSkill)
+	-- Call skill_manifest.cfg for compatibility
 	cvars.ExecConfig("skill_manifest.cfg")
 
 	-- Use %d for int casting
