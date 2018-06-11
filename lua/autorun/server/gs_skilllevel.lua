@@ -7,7 +7,7 @@ local function ExecConfig(sFile)
 		-- File:EndOfFile() replacement
 		while (File:Tell() < iSize) do
 			-- Trim whitespace off the front and back
-			local sLine = string.match(File:ReadLine(), "^%s*(.*)%s*$")
+			local sLine = string.match(File:ReadLine(), "^%s*(.-)%s*$")
 			local iComment = string.find(sLine, "//", 1, true)
 			local iLen
 
@@ -67,7 +67,7 @@ local function ExecConfig(sFile)
 			until (iCurPos == nil)
 
 			-- Recursive exec calls
-			if (string.match(tArgs[1], "^%s*(.*)%s*$") == "exec") then
+			if (string.match(tArgs[1], "^%s*(.-)%s*$") == "exec") then
 				local sFile = tArgs[2]
 
 				if (sFile ~= nil) then
